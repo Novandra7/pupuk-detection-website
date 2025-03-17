@@ -1,0 +1,11 @@
+{
+    "compilerOptions": {
+        "baseUrl": ".",
+        "paths": {
+            "@/*": ["resources/js/*"],
+            "@granule/*": ["vendor/granule/starter-kit/src/Application/resources/js/*"],
+            "ziggy-js": ["./vendor/tightenco/ziggy"]
+        }
+    },
+    "exclude": ["node_modules", "public"]
+}
