@@ -34,8 +34,8 @@ onMounted(() => {
         callback(data);
     };
 
-    fetchData((result) => {
-        const formattedData = result.map((item, index) => ({
+    fetchData((data) => {
+        const formattedData = data.map((item, index) => ({
             id: index + 1,
             granul: item[1],
             subsidi: item[2],
@@ -94,7 +94,7 @@ onMounted(() => {
 
         chart.cursor = new am4charts.XYCursor();
 
-        });
+    });
     
 });
 
