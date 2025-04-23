@@ -3,8 +3,8 @@
      	 <el-button> Channel </el-button>
 			<template #dropdown>
 				<el-dropdown-menu>
-					<el-dropdown-item @click="setActive('Kamera 1')">Kamera 1</el-dropdown-item>
-					<el-dropdown-item @click="setActive('video')">Video</el-dropdown-item>
+					<el-dropdown-item @click="emitSelect('Kamera 1')">Kamera 1</el-dropdown-item>
+					<el-dropdown-item @click="emitSelect('video')">Video</el-dropdown-item>
 				</el-dropdown-menu>
 			</template>
     </el-dropdown>
@@ -13,6 +13,10 @@
 <script setup>
 import { inject } from 'vue'
 
-const setActive = inject('setActive')
+const emit = defineEmits(['update:modelValue']) 
+
+function emitSelect(camera) {
+  emit('update:modelValue', camera) 
+}
 
 </script>

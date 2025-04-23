@@ -2,7 +2,7 @@
     <div class="p-4 rounded-xl border border-gray-400 flex-1">
         <div class="flex flex-row justify-between mb-4">
             <div>
-                <div class="font-bold">Production By Product</div>
+                <div class="font-bold">Production By {{ label }}</div>
                 <div class="font-thin text-gray-700 text-sm">This chart shows the production of each product</div>
             </div>
         </div>
@@ -17,8 +17,10 @@ import * as am4core from "@amcharts/amcharts4/core";
 import * as am4charts from "@amcharts/amcharts4/charts";
 import am4themes_animated from "@amcharts/amcharts4/themes/animated";
 import am4themes_pkt_themes from "@granule/Core/Config/am4themes_pkt_themes";
+const { label, dataSource } = defineProps(['label', 'dataSource'])
 
 const chartdiv = ref(null);
+
 onMounted(() => {
     am4core.addLicense(import.meta.env.VITE_AMCHARTS_LICENSE_KEY ?? "");
     am4core.useTheme(am4themes_animated);
@@ -30,18 +32,25 @@ onMounted(() => {
 
     // Add data
     const fetchData = async (callback) => {
-        var data = await fetch('http://127.0.0.1:5050/read').then(response => response.json());
+    try {
+        const response = await axios.get(`http://127.0.0.1:5050/read_data/${dataSource}`);
+        const data = response.data;
         callback(data);
+        } catch (error) {
+            console.error("Error fetching data:", error);
+        }
     };
 
     fetchData((data) => {
         const formattedData = data.map((item, index) => ({
             id: index + 1,
-            granul: item[1],
-            subsidi: item[2],
-            prill: item[3],
-            date: new Date(item[4]),
+            granul: item[2],
+            subsidi: item[3],
+            prill: item[4],
+            bag: item[5],
+            date: new Date(item[6]),
         }));
+
         chart.data = formattedData;
 
         // Buat X Axis (Tanggal)
@@ -73,6 +82,7 @@ onMounted(() => {
         createSeries("granul", "Granul");
         createSeries("subsidi", "Subsidi");
         createSeries("prill", "Prill");
+        createSeries("bag", "Bag");
 
         // Tambahkan Legend
         chart.legend = new am4charts.Legend();
