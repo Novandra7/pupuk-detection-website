@@ -7,9 +7,9 @@
             </div>
         </div>
         <div>
-            <img v-show="source === 'Kamera1'" src="http://127.0.0.1:5050/video_feed/Kamera1"/>
-            <img v-show="source === 'Kamera2'" src="http://127.0.0.1:5050/video_feed/Kamera2"/>
-            <img v-show="source === 'video'" src="http://127.0.0.1:5050/video_feed/video"/>
+            <img v-show="source === 'Kamera1'" :src="`${apiBaseUrl}/video_feed/Kamera1`"/>
+            <img v-show="source === 'Kamera2'" :src="`${apiBaseUrl}/video_feed/Kamera2`"/>
+            <img v-show="source === 'video'" :src="`${apiBaseUrl}/video_feed/video`"/>
         </div>
     </div>
 </template>
@@ -17,5 +17,6 @@
 <script setup>
 
 const { source } = defineProps(['source'])
+const apiBaseUrl = import.meta.env.VITE_API_BASE_URL;
 
 </script>

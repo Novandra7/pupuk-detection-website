@@ -20,6 +20,7 @@ import am4themes_pkt_themes from "@granule/Core/Config/am4themes_pkt_themes";
 const { label, dataSource } = defineProps(['label', 'dataSource'])
 
 const chartdiv = ref(null);
+const apiBaseUrl = import.meta.env.VITE_API_BASE_URL;
 
 onMounted(() => {
     am4core.addLicense(import.meta.env.VITE_AMCHARTS_LICENSE_KEY ?? "");
@@ -33,7 +34,7 @@ onMounted(() => {
     // Add data
     const fetchData = async (callback) => {
     try {
-        const response = await axios.get(`http://127.0.0.1:5050/read_data/${dataSource}`);
+        const response = await axios.get(`${apiBaseUrl}/read_data/${dataSource}`);
         const data = response.data;
         callback(data);
         } catch (error) {

@@ -7,23 +7,20 @@
     </el-tabs>
 </template>
   
-<script lang="ts" setup>
+<script setup>
 import { ref, onMounted } from 'vue'
-import type { TabsPaneContext } from 'element-plus'
 import ProductionLineChart from '@/Widgets/Home/ProductionLineChart.vue';
 import CctvDisplay from '@/Widgets/Home/CctvDisplay.vue';
 import axios from 'axios'
 
 const responseSumber = ref([])
 const activeName = ref('3')
+const apiBaseUrl = import.meta.env.VITE_API_BASE_URL;
 
-const handleClick = (tab: TabsPaneContext, event: Event) => {
-  activeName.value = String(tab.props.name)
-}
 
 onMounted(async () => {
   try {
-      const response2 = await axios.get('http://127.0.0.1:5050/read_sumber')
+      const response2 = await axios.get(`${apiBaseUrl}/read_sumber`)
       responseSumber.value = response2.data
   } catch (error) {
       console.error('Gagal fetch data:', error)
