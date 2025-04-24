@@ -45,10 +45,10 @@ onMounted(() => {
     fetchData((data) => {
         const formattedData = data.map((item, index) => ({
             id: index + 1,
-            granul: item[2],
-            subsidi: item[3],
-            prill: item[4],
-            bag: item[5],
+            bag: item[2],
+            granul: item[3],
+            subsidi: item[4],
+            prill: item[5],
             date: new Date(item[6]),
         }));
 
