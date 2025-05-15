@@ -45,5 +45,36 @@ export const navItems = [
                 "permission": "user_log.browse"
             }
         ]
-    }
+    },
+    {
+        "label": "Master Data",
+        "href": "/master-data",
+        "icon": "archive-box",
+        "permission": [
+            "warehouse.browse",
+            "cctv.browse"
+        ],
+        "submenu": [
+            {
+                "label": "Warehouse",
+                "href": "/warehouse",
+                "permission": "warehouse.browse"
+            },
+            {
+                "label": "CCTV",
+                "href": "/cctv",
+                "permission": "cctv.browse"
+            },
+            {
+                "label": "Bag",
+                "href": "/bag",
+                "permission": "bag.browse"
+            },
+            {
+                "label": "Shift",
+                "href": "/shift",
+                "permission": "shift.browse"
+            }
+        ]
+    }  
 ];

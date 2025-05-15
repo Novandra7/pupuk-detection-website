@@ -27,4 +27,40 @@ return [
             'browse',
         ]
     ],
+    [
+        'group_name' => 'warehouse',
+        'permissions' => [
+            'browse',
+            'create',
+            'update',
+            'delete',
+        ]
+    ],
+    [
+        'group_name' => 'cctv',
+        'permissions' => [
+            'browse',
+            'create',
+            'update',
+            'delete',
+        ]
+    ],
+    [
+        'group_name' => 'bag',
+        'permissions' => [
+            'browse',
+            'create',
+            'update',
+            'delete',
+        ]
+    ],
+    [
+        'group_name' => 'shift',
+        'permissions' => [
+            'browse',
+            'create',
+            'update',
+            'delete',
+        ]
+    ]
 ];

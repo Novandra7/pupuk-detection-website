@@ -34,7 +34,7 @@ onMounted(() => {
     // Add data
     const fetchData = async (callback) => {
     try {
-        const response = await axios.get(`${apiBaseUrl}/read_data/${dataSource}`);
+        const response = await axios.get(`${apiBaseUrl}/read_records/${dataSource}`);
         const data = response.data;
         callback(data);
         } catch (error) {
@@ -45,11 +45,11 @@ onMounted(() => {
     fetchData((data) => {
         const formattedData = data.map((item, index) => ({
             id: index + 1,
-            bag: item[2],
-            granul: item[3],
-            subsidi: item[4],
-            prill: item[5],
-            date: new Date(item[6]),
+            bag: item.bag,
+            granul: item.granul,
+            subsidi: item.subsidi,
+            prill: item.prill,
+            date: new Date(item.datetime),
         }));
 
         chart.data = formattedData;
