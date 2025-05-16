@@ -13,82 +13,6 @@
     </div>
 </template>
 
-<!-- <script setup>
-import { ref, onMounted } from 'vue'
-import * as am4core from '@amcharts/amcharts4/core'
-import * as am4charts from '@amcharts/amcharts4/charts'
-import am4themes_animated from '@amcharts/amcharts4/themes/animated'
-import am4themes_pkt_themes from '@granule/Core/Config/am4themes_pkt_themes'
-import axios from 'axios'
-
-const { label, dataSource } = defineProps(['label', 'dataSource'])
-const chartdiv = ref(null)
-const chartData = ref([])
-const apiBaseUrl = import.meta.env.VITE_API_BASE_URL
-
-const apalah = () => {
-  console.log('Button clicked!');
-};
-
-onMounted(async () => {
-  try {
-        const response = await axios.get(`${apiBaseUrl}/read_formatted_records/${dataSource}`)
-        chartData.value = response.data
-
-        // License dan theme setup
-        am4core.addLicense(import.meta.env.VITE_AMCHARTS_LICENSE_KEY ?? '')
-        am4core.useTheme(am4themes_animated)
-        am4core.useTheme(am4themes_pkt_themes)
-
-        // Transformasi data: kelompokkan berdasarkan shift
-        const shiftMap = {}
-        chartData.value.forEach(item => {
-            const shift = `Shift ${item.shift_name}`
-            if (!shiftMap[shift]) {
-                shiftMap[shift] = { shift }
-            }
-            
-            shiftMap[shift][item.source_name] = [item.total_bag] // Ganti total_bag ke jenis lain jika perlu
-        })
-
-        const transformedData = Object.values(shiftMap)
-
-        // Buat chart
-        const chart = am4core.create(chartdiv.value, am4charts.XYChart)
-        chart.logo?.dispose()
-        chart.data = transformedData
-        console.log(transformedData)
-
-        // X Axis
-        let categoryAxis = chart.xAxes.push(new am4charts.CategoryAxis())
-        categoryAxis.dataFields.category = 'shift'
-        categoryAxis.title.text = 'Shift'
-        categoryAxis.renderer.grid.template.location = 0
-
-        // Y Axis
-        let valueAxis = chart.yAxes.push(new am4charts.ValueAxis())
-        valueAxis.title.text = 'Total Bag' // Ubah label sesuai jenis produk
-
-        // Ambil daftar unik source_name (misal: CCTV-1, CCTV-2)
-        const sourceNames = [...new Set(chartData.value.map(d => d.source_name))]
-
-        sourceNames.forEach(source => {
-            let series = chart.series.push(new am4charts.ColumnSeries())
-            series.dataFields.valueY = source
-            series.dataFields.categoryX = 'shift'
-            series.name = source
-            series.stacked = true // Set stacked ke true untuk stacked column chart
-            series.columns.template.tooltipText = `{name} - {categoryX}: [bold]{valueY}[/]`
-            series.stacked = false // Grouped column, bukan stacked
-        })
-
-        chart.legend = new am4charts.Legend()
-    } catch (error) {
-        console.error('Gagal fetch data:', error)
-    }
-})
-</script> -->
-
 <script setup>
 import { ref, onMounted } from 'vue'
 import * as am4core from '@amcharts/amcharts4/core'
@@ -106,9 +30,10 @@ const apiBaseUrl = import.meta.env.VITE_API_BASE_URL
 
 const storeData = async () => {
   await axios.get(`${apiBaseUrl}/write_records`)
+  await loadChart()
 };
 
-onMounted(async () => {
+const loadChart = async () => {
   try {
     const response = await axios.get(`${apiBaseUrl}/read_formatted_records/${dataSource}`)
     chartData.value = response.data
@@ -204,5 +129,10 @@ onMounted(async () => {
   } catch (error) {
     console.error('Gagal fetch data:', error)
   }
+
+}
+console.log(äwd)
+onMounted(async ()=>{
+  loadChart()
 })
 </script>
