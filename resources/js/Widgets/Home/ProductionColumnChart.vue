@@ -29,9 +29,28 @@ const chartData = ref([])
 const apiBaseUrl = import.meta.env.VITE_API_BASE_URL
 
 const storeData = async () => {
-  await axios.get(`${apiBaseUrl}/write_records`)
-  await loadChart()
-};
+  try {
+    const response = await axios.get(`${apiBaseUrl}/write_records`)
+
+    if (response.status === 200) {
+      await loadChart()
+      ElMessage({
+        message: 'Data berhasil disimpan',
+        type: 'success',
+      })
+    } else {
+      ElMessage({
+        message: `Gagal menyimpan data: status ${response.status}`,
+        type: 'error',
+      })
+    }
+  } catch (error) {
+    ElMessage({
+      message: `Error saat menyimpan data: ${error.message}`,
+      type: 'error',
+    })
+  }
+}
 
 const loadChart = async () => {
   try {
@@ -131,7 +150,6 @@ const loadChart = async () => {
   }
 
 }
-console.log(äwd)
 onMounted(async ()=>{
   loadChart()
 })
