@@ -36,9 +36,9 @@
                             accept="image/jpeg,image/png,application/pdf"
                         >
                             <el-icon class="el-icon--upload"><upload-filled /></el-icon>
-                            <div class="el-upload__text">
-                            Drop file here or <em>click to upload</em>
-                            </div>
+                                <div class="el-upload__text">
+                                    Drop file here or <em>click to upload</em>
+                                </div>
                             <template #tip>
                             <div class="el-upload__tip">
                                 jpg/png/pdf files with a size less than 5MB

@@ -24,7 +24,7 @@ class ShiftController extends Controller
     public function shiftManagePage(Request $request)
     {
         return Inertia::render('MasterData/ShiftManage', [
-            'roles' => Shift::all(),
+            'shift' => Shift::all(),
             'leader_enabled' => config('granule-starter-kit.leader.LEADER_API_KEY') != null,
         ]);
     }

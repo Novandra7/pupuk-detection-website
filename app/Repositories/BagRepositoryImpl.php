@@ -7,6 +7,7 @@ use App\Models\Bag;
 use Illuminate\Contracts\Database\Query\Builder;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 use Pkt\StarterKit\Helpers\DxAdapter;
 
 class BagRepositoryImpl implements BagRepository
@@ -22,6 +23,11 @@ class BagRepositoryImpl implements BagRepository
     {
         DB::beginTransaction();
         try {
+            if (isset($bagData['image']) && $bagData['image']->isValid()) {
+                $imagePath = $bagData['image']->store('bags', 'public');
+                unset($bagData['image']);
+                $bagData['image'] = $imagePath;
+            }
             $bag = Bag::query()->create($bagData);
             DB::commit();
             return $bag;
@@ -37,6 +43,14 @@ class BagRepositoryImpl implements BagRepository
         DB::beginTransaction();
         try {
             $bag = Bag::query()->where('id', $bagId)->firstOrFail();
+            if (isset($bagData['image']) && $bagData['image']->isValid()) {
+                if ($bag->image && Storage::disk('public')->exists($bag->image)) {
+                    Storage::disk('public')->delete($bag->image);
+                }
+                $imagePath = $bagData['image']->store('bags', 'public');
+                unset($bagData['image']);
+                $bagData['image'] = $imagePath;
+            }
             $bag->update($bagData);
             DB::commit();
             return $bag;
@@ -52,6 +66,9 @@ class BagRepositoryImpl implements BagRepository
     {
         try {
             $bag = Bag::query()->where('id', $bagId)->firstOrFail();
+            if ($bag->image && Storage::disk('public')->exists($bag->image)) {
+                Storage::disk('public')->delete($bag->image);
+            }
             $bag->delete();
         } catch (ModelNotFoundException $e) {
             throw new \RuntimeException("Bag not found");

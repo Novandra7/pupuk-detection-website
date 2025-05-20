@@ -70,7 +70,7 @@ Route::authenticated()->group(function () {
         Route::get('/bag', 'bagManagePage')->name('bag.browse')->can('bag.browse');
         Route::get('/bag/data-processing', 'dataProcessing')->name('bag.data_processing')->can('bag.browse');
         Route::post('/bag', 'create')->name('bag.create')->can('bag.create');
-        Route::put('/bag/{bag}', 'update')->name('bag.update')->can('bag.update');
+        Route::post('/bag/{bag}', 'update')->name('bag.update')->can('bag.update');
         Route::put('/bag/{bag:id}/switch-status', 'switchStatus')->name('bag.switch_status')->can('bag.update');
         Route::delete('/bag/{bag}', 'delete')->name('bag.delete')->can('bag.delete');
     });

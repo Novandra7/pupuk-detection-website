@@ -6,7 +6,7 @@
         </template>
         <div class="flex flex-row">
             <DxDataGrid ref="datagridRef" :data-source="dataSource" key="id" @selection-changed="onSelectionChanged" @cell-dbl-click="editCctvAction($event.data)">
-                <DxColumn data-field="warehouse.warehouse_name" caption="Location" :allowHeaderFiltering="false" />
+                <DxColumn data-field="warehouse.warehouse_name" caption="Warehouse" :allowHeaderFiltering="false" />
                 <DxColumn data-field="source_name" caption="Source Name" :allowHeaderFiltering="false" />
                 <DxColumn data-field="url_streaming" caption="Url Streaming" :allowHeaderFiltering="false" />
                 <DxColumn data-field="endpoint" caption="Key" :allowHeaderFiltering="false" />

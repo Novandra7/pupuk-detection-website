@@ -7,7 +7,11 @@
         <div class="flex flex-row">
             <DxDataGrid ref="datagridRef" :data-source="dataSource" key="id" @selection-changed="onSelectionChanged" @cell-dbl-click="editBagAction($event.data)">
                 <DxColumn data-field="bag_type" caption="Bag Type" :allowHeaderFiltering="false" />
-                <DxColumn data-field="weight_in_kilogram" caption="Weight in Kilogram" :allowHeaderFiltering="false" />
+                <DxColumn data-field="weight_in_kilogram" caption="Weight in Kilogram" :allowHeaderFiltering="false" alignment="left"/>
+                <DxColumn cell-template="image" data-field="image" caption="Image" :allowHeaderFiltering="false" :allowFiltering="false"/>
+                <template #image="{ data }">
+                     <img :src="`/storage/${data.value}`" alt="Image not found" style="height: 60px; object-fit: cover;" />
+                </template>
                 <DxColumn data-field="is_active" caption="Status" cell-template="bag-status" :allowFiltering="true" :allowHeaderFiltering="false" data-type="boolean" false-text="Inactive" true-text="Active"/>
                 <template #bag-status="{ data }">
                     <span v-if="data.data.is_active"
@@ -91,6 +95,22 @@
                     <el-input v-model="formBag.weight_in_kilogram" autocomplete="one-time-code" autocorrect="off"
                         spellcheck="false" />
                 </el-form-item>
+                <el-form-item :error="getFormError('image')" label="Bag Image" prop="image">
+                    <el-upload :on-change="handleFileChange" :on-remove="handleFileRemove" drag class="!w-full" :auto-upload="false" :limit="1" accept="image/jpeg,image/png">
+                        <div class="flex justify-center items-center ">
+                            <BsIcon v-if="!previewImageUrl" icon="cloud-arrow-up" class=""/><upload-filled />
+                            <img v-if="previewImageUrl" :src="previewImageUrl" alt="Preview" class="h-full object-cover rounded-md" />
+                        </div>
+                        <div v-if="!previewImageUrl" class="el-upload__text">
+                            Drop file here or <em>click to upload</em>
+                        </div>
+                        <template #tip>
+                            <div class="el-upload__tip">
+                                jpg/png files with a size up to 2MB
+                            </div>
+                        </template>
+                    </el-upload>
+                </el-form-item>
             </el-form>
             <template #footer>
                 <span class="dialog-footer flex">
@@ -101,12 +121,11 @@
             </template> 
         </el-dialog>
     </MainLayout>
-
 </template>
 
 <script setup>
 import MainLayout from '@/Layouts/MainLayout.vue';
-import { Head, useForm, usePage, router } from '@inertiajs/vue3';
+import { Head, useForm, router } from '@inertiajs/vue3';
 import BsButton from '@granule/Components/BsButton.vue';
 import { ref, computed } from 'vue';
 import { can } from '@granule/Core/Helpers/permission-check';
@@ -123,17 +142,33 @@ import BsIconButton from '@granule/Components/BsIconButton.vue';
 import axios from 'axios';
 
 
-
 const formBagRef = ref();
 const editMode = ref(false);
 const dialogFormVisible = ref(false);
 const formBagErrors = ref([]);
+const previewImageUrl = ref('');
 
 const formBag = useForm({
     bag_id: '',
     bag_type: '',
     weight_in_kilogram: '',
+    image: null,
 });
+
+function handleFileChange(file) {
+    if (file && file.raw) {
+        formBag.image = file.raw;
+        previewImageUrl.value = URL.createObjectURL(file.raw);
+    }
+}
+
+function handleFileRemove(file) {   
+    if (file && file.raw) {
+        formBag.image = '';
+        previewImageUrl.value = '';
+    }
+}
+
 
 function addBagAction() {
     editMode.value = false;
@@ -142,6 +177,8 @@ function addBagAction() {
     formBag.bag_id = '';
     formBag.bag_type = '';
     formBag.weight_in_kilogram = '';
+    formBag.image = [];
+    previewImageUrl.value = ''    
 }
 
 async function addBagSubmitAction() {
@@ -174,16 +211,18 @@ async function addBagSubmitAction() {
 function editBagAction(dataBag) {
     editMode.value = true;
     dialogFormVisible.value = true;
-
+    
     formBag.bag_id =dataBag.id;
     formBag.bag_type =dataBag.bag_type;
     formBag.weight_in_kilogram =dataBag.weight_in_kilogram;
+    formBag.image =dataBag.image;
+    previewImageUrl.value = `/storage/${dataBag.image}`;        
 }
 
-async function editBagSubmitAction() {
+async function editBagSubmitAction() {    
     await formBagRef.value.validate(async (valid, _) => {
-        if (valid) {
-            formBag.put(route('bag.update',formBag.bag_id), {
+        if (valid) {                                  
+            formBag.post(route('bag.update',formBag.bag_id), {
                 onSuccess: (response) => {
                     ElMessage({
                         message: response.props.flash.message,
@@ -193,7 +232,8 @@ async function editBagSubmitAction() {
                     formBagErrors.value = [];
                     dialogFormVisible.value = false;
                 },
-                onError: (errors) => {
+                onError: (errors) => {   
+                    console.log('gagal cik');        
                     formBagErrors.value = errors;
                     if('message' in errors){
                         ElMessage({
@@ -299,8 +339,19 @@ const dataKey = 'id'; //change to data primary key
 const dataRoute = route('bag.data_processing') //change to data processing route
 const dataSource = new CustomStore({
     key: dataKey,
-    load: dxLoad(dataRoute).bind(this),
-});  
+    async load(loadOptions) {
+        const result = await dxLoad(dataRoute).call(this, loadOptions);
+        if (result && result.data && result.data.length > 0) {
+            // Skip baris pertama
+            result.data = result.data.slice(2);
+            // Update totalCount kalau pakai pagination
+            if (result.totalCount !== undefined) {
+                result.totalCount = result.totalCount - 1;
+            }
+        }
+        return result;
+    }
+}); 
 
 
 // DEVEXTREME DATAGRID
