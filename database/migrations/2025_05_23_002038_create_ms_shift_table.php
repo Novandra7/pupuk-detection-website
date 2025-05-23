@@ -16,8 +16,7 @@ return new class extends Migration
             $table->string('shift_name')->nullable();
             $table->time('start_time')->nullable();
             $table->time('end_time')->nullable();
-            $table->dateTime('created_at')->nullable();
-            $table->dateTime('updated_at')->nullable();
+            $table->timestamps();
             $table->boolean('is_active')->nullable();
         });
     }

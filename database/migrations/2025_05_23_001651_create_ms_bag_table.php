@@ -16,8 +16,7 @@ return new class extends Migration
             $table->string('bag_type')->nullable();
             $table->integer('weight_in_kilogram')->nullable();
             $table->string('image');
-            $table->dateTime('created_at')->nullable();
-            $table->dateTime('updated_at')->nullable();
+            $table->timestamps();
             $table->boolean('is_active')->nullable();
         });
     }

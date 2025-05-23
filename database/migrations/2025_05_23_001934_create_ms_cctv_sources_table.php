@@ -17,8 +17,7 @@ return new class extends Migration
             $table->string('source_name')->nullable();
             $table->string('url_streaming')->nullable();
             $table->string('endpoint')->nullable();
-            $table->dateTime('created_at')->nullable();
-            $table->dateTime('updated_at')->nullable();
+            $table->timestamps();
             $table->boolean('is_active')->nullable();
 
             $table->foreign('ms_warehouse_id')->references('id')->on('ms_warehouse');

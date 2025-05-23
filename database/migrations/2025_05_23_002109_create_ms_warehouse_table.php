@@ -14,8 +14,7 @@ return new class extends Migration
         Schema::create('ms_warehouse', function (Blueprint $table) {
             $table->id();
             $table->string('warehouse_name')->nullable();
-            $table->dateTime('created_at')->nullable();
-            $table->dateTime('updated_at')->nullable();
+            $table->timestamps();
             $table->boolean('is_active')->nullable();
         });
     }
