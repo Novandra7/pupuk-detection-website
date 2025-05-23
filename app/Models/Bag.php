@@ -7,7 +7,6 @@ use Illuminate\Database\Eloquent\Model;
 class Bag extends Model
 {
     protected $primaryKey = 'id';
-    protected $connection = 'mysql1';
     protected $table = 'ms_bag';
 
     protected $guarded = ['id'];

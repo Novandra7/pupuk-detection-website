@@ -7,7 +7,6 @@ use Illuminate\Database\Eloquent\Model;
 class Cctv extends Model
 {
     protected $primaryKey = 'id';
-    protected $connection = 'mysql1';
     protected $table = 'ms_cctv_sources';
 
     protected $guarded = ['id'];

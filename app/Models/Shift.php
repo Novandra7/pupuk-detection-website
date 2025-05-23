@@ -7,7 +7,6 @@ use Illuminate\Database\Eloquent\Model;
 class Shift extends Model
 {
     protected $primaryKey = 'id';
-    protected $connection = 'mysql1';
     protected $table = 'ms_shift';
 
     protected $guarded = ['id'];
