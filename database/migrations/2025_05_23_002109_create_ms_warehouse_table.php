@@ -11,14 +11,12 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('data', function (Blueprint $table) {
+        Schema::create('ms_warehouse', function (Blueprint $table) {
             $table->id();
-            $table->foreign('sumber_id')->references('id')->on('sumber')->onDelete('cascade');
-            $table->integer('bag');
-            $table->integer('granul');
-            $table->integer('subsidi');
-            $table->integer('prill');
-            $table->dateTime('datetime');
+            $table->string('warehouse_name')->nullable();
+            $table->dateTime('created_at')->nullable();
+            $table->dateTime('updated_at')->nullable();
+            $table->boolean('is_active')->nullable();
         });
     }
 
@@ -27,6 +25,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('data');
+        Schema::dropIfExists('ms_warehouse');
     }
 };
