@@ -8,7 +8,6 @@ class Shift extends Model
 {
     protected $primaryKey = 'id';
     protected $table = 'ms_shift';
-
     protected $guarded = ['id'];
 
     protected function casts(): array

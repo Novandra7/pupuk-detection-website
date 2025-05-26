@@ -14,19 +14,22 @@
 
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref } from 'vue'
+import axios from 'axios'
 
-const { warehouse_id } = defineProps(['warehouse_id'])
+const { warehouse_id} = defineProps(['warehouse_id']);
 const apiBaseUrl = import.meta.env.VITE_API_BASE_URL;
 
 const responseData = ref([])
 
-onMounted(async () => {
-  try {
-      const response = await axios.get(`${apiBaseUrl}/read_cctv_sources/${warehouse_id}`)
-      responseData.value = response.data
-  } catch (error) {
-      console.error('Gagal fetch data:', error)
-  }
-})
+const fetchData = async () => {
+    try {
+        const response = await axios.get(`${apiBaseUrl}/read_cctv_sources/${warehouse_id}`);
+        responseData.value = response.data;
+    } catch (error) {
+        console.error('Gagal fetch data:', error);
+    }
+};
+
+fetchData()
 </script>

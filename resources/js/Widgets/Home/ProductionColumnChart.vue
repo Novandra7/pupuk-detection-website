@@ -2,11 +2,11 @@
     <div class="p-4 rounded-xl border border-gray-400 flex-1">
         <div class="flex flex-row justify-between mb-4">
             <div>
-                <div class="font-bold">Production By Shift</div>
+                <div class="font-bold">Production By Shift <span v-if="selectedDate">in {{ selectedDate }}</span></div>
                 <div class="font-thin text-gray-700 text-sm">This chart shows the production of each product</div>
             </div>
             <div class="flex flex-row items-center">  
-                <Dropdown @selectShift="handleShiftSelect"/>
+                <DatePicker @selectDate="handleDate" />
                 <BsIconButton class="ml-2" icon="cloud-arrow-up" @click="storeData"/>
                 <BsIconButton class="ml-2" icon="arrow-path" @click="loadChart(null)"/>
             </div>
@@ -16,6 +16,10 @@
           No data available for today.
         </div>
     </div>
+
+    <el-dialog v-model="dialogVisible" :modal="true" :width="1200" modal-class="overide-animation">
+      <ProductionLineChart :key="`${modalCctv}-${modalShift}`" :cctvName="modalCctv" :shift="modalShift" :warehouseId="warehouseId"/>
+    </el-dialog>
 </template>
 
 <script setup>
@@ -25,18 +29,25 @@ import * as am4charts from '@amcharts/amcharts4/charts'
 import am4themes_animated from '@amcharts/amcharts4/themes/animated'
 import am4themes_pkt_themes from '@granule/Core/Config/am4themes_pkt_themes'
 import axios from 'axios'
+import DatePicker from '@/Components/DatePicker.vue'
 import BsIconButton from '@granule/Components/BsIconButton.vue';
-import Dropdown from '@/Components/Dropdown.vue';
-import { cos } from '@amcharts/amcharts4/.internal/core/utils/Math'
+import ProductionLineChart from '@/Widgets/Home/ProductionLineChart.vue';
+
 
 // Props
-const { label, dataSource } = defineProps(['label', 'dataSource'])
+const { label, warehouseId } = defineProps(['label', 'warehouseId'])
 const chartdiv = ref(null)
 const chartDataRef = ref([])
+const selectedDate = ref(null)
 const apiBaseUrl = import.meta.env.VITE_API_BASE_URL
 
-const handleShiftSelect = (shiftId) => {
-  loadChart(shiftId)
+const dialogVisible = ref(false)
+const modalCctv = ref(null)
+const modalShift = ref(null)
+
+function handleDate(date) {
+  selectedDate.value = date
+  loadChart(date)
 }
 
 const storeData = async () => {
@@ -63,15 +74,15 @@ const storeData = async () => {
   }
 }
 
-const loadChart = async (id_shift) => {
+const loadChart = async (date) => {
   try {
-    let url = `${apiBaseUrl}/read_formatted_records/${dataSource}`;
-    if (id_shift) {
-      url += `?id_shift=${id_shift}`;
+    let url = `${apiBaseUrl}/read_formatted_records/${warehouseId}`;
+    if (date) {
+      url += `?date=${date}`;
     }
 
     const response = await axios.get(url);
-    chartDataRef.value = response.data;
+    chartDataRef.value = response.data;    
 
     // amCharts license and theme
     am4core.addLicense(import.meta.env.VITE_AMCHARTS_LICENSE_KEY ?? '')
@@ -88,10 +99,10 @@ const loadChart = async (id_shift) => {
     // Merubah Format Data
     chartDataRef.value.forEach((item) => {
       const shift = item.shift_name;
-      const source = item.source_name.toLowerCase().replace(/\W+/g, "_"); // Contoh: CCTV-1 → cctv_1
-      const bagType = item.bag_type.toLowerCase(); // Contoh: Bag → bag
+      const source = item.source_name.toLowerCase().replace(/\W+/g, "_"); // CCTV-1 → cctv_1
+      const bagType = item.bag_type.toLowerCase(); // Bag → bag
 
-      if (bagType === 'bag') return;
+      if (bagType === "bag") return; // Skip jenis "Bag" (sesuai logika kamu)
 
       const key = shift;
       if (!chartDataMap[key]) {
@@ -99,11 +110,18 @@ const loadChart = async (id_shift) => {
       }
 
       const columnName = `${source}_total_${bagType}`;
-      chartDataMap[key][columnName] = item.total_quantity;
+
+      if (!chartDataMap[key][columnName]) {
+        chartDataMap[key][columnName] = 0;
+      }
+
+      chartDataMap[key][columnName] += item.total_quantity;
     });
 
     // Ubah object jadi array
     const chartDataFix = Object.values(chartDataMap);
+    console.log(chartDataFix);
+    
 
     chart.data = chartDataFix;
 
@@ -128,6 +146,15 @@ const loadChart = async (id_shift) => {
       series.columns.template.tooltipText = "{name}: [bold]{valueY}[/]";
       series.stacked = stacked;
       series.columns.template.width = am4core.percent(95);
+
+      series.columns.template.events.on("hit", function(ev) {
+        const label = ev.target.dataItem.component.name;
+        const name = label.split(" - ")[0].replace(" ", "-").toUpperCase();
+        const xAxisLabel = ev.target.dataItem.categoryX;
+        modalCctv.value = name
+        modalShift.value = xAxisLabel           
+        dialogVisible.value = true  
+    })
     }
 
     // Generate fields from chart.data
@@ -143,7 +170,7 @@ const loadChart = async (id_shift) => {
     // Kelompokkan berdasarkan sumber (misal: cctv_1, cctv_2)
     const groupedBySource = {};
     fields.forEach(field => {
-      const source = field.split("_").slice(0, 2).join(" "); // cctv_1
+      const source = field.split("_").slice(0, 2).join(" ").toUpperCase(); // cctv_1
       if (!groupedBySource[source]) groupedBySource[source] = [];
       groupedBySource[source].push(field);
     });

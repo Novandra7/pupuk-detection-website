@@ -1,209 +1,108 @@
-// Asumsikan ini adalah data asli yang kamu miliki
-const inputData = [
+function pivotBagTypeByDate(data) {
+  const bagTypes = new Set();
+  const grouped = new Map();
+
+  // Langkah 1: Kumpulkan semua jenis bag_type selain "Bag"
+  data.forEach(item => {
+    if (item.bag_type !== "Bag") {
+      bagTypes.add(item.bag_type);
+    }
+  });
+
+  // Langkah 2: Kelompokkan data berdasarkan tanggal
+  data.forEach(item => {
+    if (item.bag_type === "Bag") return;
+
+    if (!grouped.has(item.record_date)) {
+      // Inisialisasi dengan semua bag_type = 0
+      const entry = { record_date: item.record_date };
+      bagTypes.forEach(type => entry[type] = 0);
+      grouped.set(item.record_date, entry);
+    }
+
+    const entry = grouped.get(item.record_date);
+    entry[item.bag_type] += item.total_quantity;
+  });
+
+  // Langkah 3: Pastikan semua tanggal punya semua bag_type
+  for (const entry of grouped.values()) {
+    bagTypes.forEach(type => {
+      if (!(type in entry)) {
+        entry[type] = 0;
+      }
+    });
+  }
+
+  return Array.from(grouped.values());
+}
+
+
+
+const rawData = [
   {
-    "record_date": "2025-05-14",
+    "record_date": "2025-05-20",
     "warehouse_name": "Warehouse A",
-    "source_name": "CCTV-2",
-    "shift_id": 1,
-    "shift_name": "Pagi",
-    "bag_type": "Granul",
-    "total_quantity": 1
-  },
-  {
-    "record_date": "2025-05-14",
-    "warehouse_name": "Warehouse A",
-    "source_name": "CCTV-1",
-    "shift_id": 3,
-    "shift_name": "Malam",
-    "bag_type": "Bag",
-    "total_quantity": 1
-  },
-  {
-    "record_date": "2025-05-14",
-    "warehouse_name": "Warehouse A",
-    "source_name": "CCTV-1",
-    "shift_id": 3,
-    "shift_name": "Malam",
-    "bag_type": "Prill",
-    "total_quantity": 1
-  },
-  {
-    "record_date": "2025-05-15",
-    "warehouse_name": "Warehouse A",
-    "source_name": "CCTV-2",
-    "shift_id": 1,
-    "shift_name": "Pagi",
-    "bag_type": "Subsidi",
-    "total_quantity": 1
-  },
-  {
-    "record_date": "2025-05-15",
-    "warehouse_name": "Warehouse A",
-    "source_name": "CCTV-1",
-    "shift_id": 3,
-    "shift_name": "Malam",
-    "bag_type": "Granul",
-    "total_quantity": 1
-  },
-  {
-    "record_date": "2025-05-16",
-    "warehouse_name": "Warehouse A",
-    "source_name": "CCTV-2",
+    "source_name": "CCTV-3",
     "shift_id": 1,
     "shift_name": "Pagi",
     "bag_type": "Bag",
-    "total_quantity": 1
-  },
-  {
-    "record_date": "2025-05-16",
-    "warehouse_name": "Warehouse A",
-    "source_name": "CCTV-2",
-    "shift_id": 1,
-    "shift_name": "Pagi",
-    "bag_type": "Prill",
-    "total_quantity": 1
-  },
-  {
-    "record_date": "2025-05-16",
-    "warehouse_name": "Warehouse A",
-    "source_name": "CCTV-1",
-    "shift_id": 3,
-    "shift_name": "Malam",
-    "bag_type": "Subsidi",
-    "total_quantity": 1
-  },
-  {
-    "record_date": "2025-05-17",
-    "warehouse_name": "Warehouse A",
-    "source_name": "CCTV-1",
-    "shift_id": 2,
-    "shift_name": "Siang",
-    "bag_type": "Bag",
-    "total_quantity": 1
-  },
-  {
-    "record_date": "2025-05-17",
-    "warehouse_name": "Warehouse A",
-    "source_name": "CCTV-2",
-    "shift_id": 3,
-    "shift_name": "Malam",
-    "bag_type": "Granul",
-    "total_quantity": 1
-  },
-  {
-    "record_date": "2025-05-17",
-    "warehouse_name": "Warehouse A",
-    "source_name": "CCTV-1",
-    "shift_id": 3,
-    "shift_name": "Malam",
-    "bag_type": "Prill",
-    "total_quantity": 1
-  },
-  {
-    "record_date": "2025-05-18",
-    "warehouse_name": "Warehouse A",
-    "source_name": "CCTV-1",
-    "shift_id": 2,
-    "shift_name": "Siang",
-    "bag_type": "Granul",
-    "total_quantity": 1
-  },
-  {
-    "record_date": "2025-05-18",
-    "warehouse_name": "Warehouse A",
-    "source_name": "CCTV-2",
-    "shift_id": 3,
-    "shift_name": "Malam",
-    "bag_type": "Subsidi",
-    "total_quantity": 1
-  },
-  {
-    "record_date": "2025-05-19",
-    "warehouse_name": "Warehouse A",
-    "source_name": "CCTV-2",
-    "shift_id": 2,
-    "shift_name": "Siang",
-    "bag_type": "Bag",
-    "total_quantity": 1
-  },
-  {
-    "record_date": "2025-05-19",
-    "warehouse_name": "Warehouse A",
-    "source_name": "CCTV-1",
-    "shift_id": 2,
-    "shift_name": "Siang",
-    "bag_type": "Subsidi",
-    "total_quantity": 1
-  },
-  {
-    "record_date": "2025-05-19",
-    "warehouse_name": "Warehouse A",
-    "source_name": "CCTV-2",
-    "shift_id": 3,
-    "shift_name": "Malam",
-    "bag_type": "Prill",
-    "total_quantity": 1
+    "total_quantity": 3
   },
   {
     "record_date": "2025-05-20",
     "warehouse_name": "Warehouse A",
-    "source_name": "CCTV-1",
+    "source_name": "CCTV-3",
+    "shift_id": 1,
+    "shift_name": "Pagi",
+    "bag_type": "Granul",
+    "total_quantity": 3
+  },
+  {
+    "record_date": "2025-05-20",
+    "warehouse_name": "Warehouse A",
+    "source_name": "CCTV-3",
+    "shift_id": 1,
+    "shift_name": "Pagi",
+    "bag_type": "Subsidi",
+    "total_quantity": 4
+  },
+  {
+    "record_date": "2025-05-21",
+    "warehouse_name": "Warehouse A",
+    "source_name": "CCTV-3",
     "shift_id": 1,
     "shift_name": "Pagi",
     "bag_type": "Bag",
     "total_quantity": 1
   },
   {
-    "record_date": "2025-05-20",
+    "record_date": "2025-05-21",
     "warehouse_name": "Warehouse A",
-    "source_name": "CCTV-1",
+    "source_name": "CCTV-3",
     "shift_id": 1,
     "shift_name": "Pagi",
-    "bag_type": "Prill",
+    "bag_type": "Granul",
     "total_quantity": 1
   },
   {
-    "record_date": "2025-05-20",
+    "record_date": "2025-05-25",
     "warehouse_name": "Warehouse A",
-    "source_name": "CCTV-2",
-    "shift_id": 2,
-    "shift_name": "Siang",
+    "source_name": "CCTV-3",
+    "shift_id": 1,
+    "shift_name": "Pagi",
+    "bag_type": "Bag",
+    "total_quantity": 33
+  },
+  {
+    "record_date": "2025-05-25",
+    "warehouse_name": "Warehouse A",
+    "source_name": "CCTV-3",
+    "shift_id": 1,
+    "shift_name": "Pagi",
     "bag_type": "Granul",
-    "total_quantity": 1
+    "total_quantity": 33
   }
 ];
 
-const result = [];
-
-inputData.forEach(entry => {
-  const { shift_name, source_name, bag_type, total_quantity } = entry;
-
-  // Cari entri shift yang sesuai
-  let shiftEntry = result.find(s => s.shift === shift_name);
-  if (!shiftEntry) {
-    shiftEntry = {
-      shift: shift_name,
-      "total bag": 0,
-      subData: []
-    };
-    result.push(shiftEntry);
-  }
-
-  // Tambahkan jumlah ke total bag
-  shiftEntry["total bag"] += total_quantity;
-
-  // Cari entri CCTV di dalam shift
-  let cctvEntry = shiftEntry.subData.find(s => s.name === source_name);
-  if (!cctvEntry) {
-    cctvEntry = { name: source_name, value: {} };
-    shiftEntry.subData.push(cctvEntry);
-  }
-
-  // Tambahkan atau update jumlah tipe pupuk
-  if (!cctvEntry.value[bag_type.toLowerCase()]) {
-    cctvEntry.value[bag_type.toLowerCase()] = 0;
-  }
-  cctvEntry.value[bag_type.toLowerCase()] += total_quantity;
-});
-
+const result = pivotBagTypeByDate(rawData);
 console.log(result);

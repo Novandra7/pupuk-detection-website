@@ -2,7 +2,7 @@
     <div class="p-4 rounded-xl border border-gray-400 flex-1">
         <div class="flex flex-row justify-between mb-4">
             <div>
-                <div class="font-bold">Production By {{ label }}</div>
+                <div class="font-bold">Production By {{ cctvName }} in shift {{ shift }}</div>
                 <div class="font-thin text-gray-700 text-sm">This chart shows the production of each product</div>
             </div>
         </div>
@@ -17,12 +17,115 @@ import * as am4core from "@amcharts/amcharts4/core";
 import * as am4charts from "@amcharts/amcharts4/charts";
 import am4themes_animated from "@amcharts/amcharts4/themes/animated";
 import am4themes_pkt_themes from "@granule/Core/Config/am4themes_pkt_themes";
-const { label, dataSource } = defineProps(['label', 'dataSource'])
+import axios from 'axios';
+
+const { cctvName, shift, warehouseId } = defineProps(['cctvName', 'shift', 'warehouseId'])
+console.log(cctvName, shift);
+
 
 const chartdiv = ref(null);
+const chartDataRef = ref(null);
 const apiBaseUrl = import.meta.env.VITE_API_BASE_URL;
 
-onMounted(() => {
+function pivotBagTypeByDate(data) {
+  const bagTypes = new Set();
+  const grouped = new Map();
+
+  // Langkah 1: Kumpulkan semua jenis bag_type selain "Bag"
+  data.forEach(item => {
+    if (item.bag_type !== "Bag") {
+      bagTypes.add(item.bag_type);
+    }
+  });
+
+  // Langkah 2: Kelompokkan data berdasarkan tanggal
+  data.forEach(item => {
+    if (item.bag_type === "Bag") return;
+
+    if (!grouped.has(item.record_date)) {
+      // Inisialisasi dengan semua bag_type = 0
+      const entry = { record_date: item.record_date };
+      bagTypes.forEach(type => entry[type] = 0);
+      grouped.set(item.record_date, entry);
+    }
+
+    const entry = grouped.get(item.record_date);
+    entry[item.bag_type] += item.total_quantity;
+  });
+
+  // Langkah 3: Pastikan semua tanggal punya semua bag_type
+  for (const entry of grouped.values()) {
+    bagTypes.forEach(type => {
+      if (!(type in entry)) {
+        entry[type] = 0;
+      }
+    });
+  }
+
+  return Array.from(grouped.values());
+}
+
+onMounted(async () => {
+    function createAxisAndSeries(field, name, opposite, bullet) {
+        var valueAxis = chart.yAxes.push(new am4charts.ValueAxis());
+        if(chart.yAxes.indexOf(valueAxis) != 0){
+            valueAxis.syncWithAxis = chart.yAxes.getIndex(0);
+        }
+        
+        var series = chart.series.push(new am4charts.LineSeries());
+        series.dataFields.valueY = field;
+        series.dataFields.dateX = "record_date";
+        series.strokeWidth = 2;
+        series.yAxis = valueAxis;
+        series.name = name;
+        series.tooltipText = "{name}: [bold]{valueY}[/]";
+        series.tensionX = 0.8;
+        series.showOnInit = true;
+        
+        var interfaceColors = new am4core.InterfaceColorSet();
+        
+        switch(bullet) {
+            case "triangle":
+            var bullet = series.bullets.push(new am4charts.Bullet());
+            bullet.width = 12;
+            bullet.height = 12;
+            bullet.horizontalCenter = "middle";
+            bullet.verticalCenter = "middle";
+            
+            var triangle = bullet.createChild(am4core.Triangle);
+            triangle.stroke = interfaceColors.getFor("background");
+            triangle.strokeWidth = 2;
+            triangle.direction = "top";
+            triangle.width = 12;
+            triangle.height = 12;
+            break;
+            case "rectangle":
+            var bullet = series.bullets.push(new am4charts.Bullet());
+            bullet.width = 10;
+            bullet.height = 10;
+            bullet.horizontalCenter = "middle";
+            bullet.verticalCenter = "middle";
+            
+            var rectangle = bullet.createChild(am4core.Rectangle);
+            rectangle.stroke = interfaceColors.getFor("background");
+            rectangle.strokeWidth = 2;
+            rectangle.width = 10;
+            rectangle.height = 10;
+            break;
+            default:
+            var bullet = series.bullets.push(new am4charts.CircleBullet());
+            bullet.circle.stroke = interfaceColors.getFor("background");
+            bullet.circle.strokeWidth = 2;
+            break;
+        }
+        
+        valueAxis.renderer.line.strokeOpacity = 1;
+        valueAxis.renderer.line.strokeWidth = 2;
+        valueAxis.renderer.line.stroke = series.stroke;
+        valueAxis.renderer.labels.template.fill = series.stroke;
+        valueAxis.renderer.opposite = opposite;
+    }
+
     am4core.addLicense(import.meta.env.VITE_AMCHARTS_LICENSE_KEY ?? "");
     am4core.useTheme(am4themes_animated);
     am4core.useTheme(am4themes_pkt_themes);
@@ -31,82 +134,37 @@ onMounted(() => {
     var chart = am4core.create(chartdiv.value, am4charts.XYChart);
     chart.logo?.dispose();
 
-    // Add data
-    const fetchData = async (callback) => {
-    try {
-        const response = await axios.get(`${apiBaseUrl}/read_records/${dataSource}`);
-        const data = response.data;
-        callback(data);
-        } catch (error) {
-            console.error("Error fetching data:", error);
-        }
-    };
+    let url = `${apiBaseUrl}/read_formatted_records/${warehouseId}`;
+    const params = [];
+    if (cctvName) params.push(`name=${encodeURIComponent(cctvName)}`);
+    if (shift) params.push(`shift=${encodeURIComponent(shift)}`);
+    if (params.length > 0) {
+        url += `?${params.join("&")}`;
+    }
+    console.log(url);
+    
 
-    fetchData((data) => {
-        const formattedData = data.map((item, index) => ({
-            id: index + 1,
-            bag: item.bag,
-            granul: item.granul,
-            subsidi: item.subsidi,
-            prill: item.prill,
-            date: new Date(item.datetime),
-        }));
+    try {        
+        const response = await axios.get(url)
+        chartDataRef.value = pivotBagTypeByDate(response.data)      
 
-        chart.data = formattedData;
-
-        // Buat X Axis (Tanggal)
-        var dateAxis = chart.xAxes.push(new am4charts.DateAxis());
-        dateAxis.renderer.grid.template.location = 0;
-        dateAxis.title.text = "Datetime";
-
-        // Buat Y Axis (Granul, Subsidi, Prill)
-        var valueAxis = chart.yAxes.push(new am4charts.ValueAxis());
-        valueAxis.title.text = "Values";
+        chart.data = chartDataRef.value
         
+        var dateAxis = chart.xAxes.push(new am4charts.DateAxis());
+        dateAxis.renderer.minGridDistance = 50;
 
-        // Fungsi untuk menambahkan line series
-        function createSeries(field, name) {
-            var series = chart.series.push(new am4charts.LineSeries());
-            series.dataFields.valueY = field;
-            series.dataFields.dateX = "date";
-            series.name = name;
-            series.strokeWidth = 2;
-            series.tooltipText = "{name}: [bold]{valueY}[/]"
-            
+        const bagTypes = Object.keys(chartDataRef.value[0]).filter(key => key !== "record_date");        
 
-            var bullet = series.bullets.push(new am4charts.CircleBullet());
-            bullet.circle.strokeWidth = 2;
-            bullet.circle.radius = 4;
-        }
-
-        // Tambahkan tiga garis
-        createSeries("granul", "Granul");
-        createSeries("subsidi", "Subsidi");
-        createSeries("prill", "Prill");
-        createSeries("bag", "Bag");
-
-        // Tambahkan Legend
-        chart.legend = new am4charts.Legend();
-
-        // Hitung total data
-        function calculateTotal(field) {
-            return chart.data.reduce((sum, item) => sum + item[field], 0);
-        }
-
-        // Tambahkan total ke legend
-        chart.legend.itemContainers.template.adapter.add("tooltipText", function(text, target) {
-            if (target.dataItem && target.dataItem.dataContext) {
-                var series = target.dataItem.dataContext;
-                var total = calculateTotal(series.dataFields.valueY);
-                return `${series.name}: ${total}`;
-            }
-            return text;
+        bagTypes.forEach((type, index) => {
+            createAxisAndSeries(type, type, index % 2 === 1, index % 3 === 0 ? "triangle" : index % 3 === 1 ? "rectangle" : "circle");
         });
 
+        chart.legend = new am4charts.Legend();
         chart.cursor = new am4charts.XYCursor();
-
-    });
-    
+        
+    } catch (error){
+        console.error('Gagal fetch data:', error)
+    }
 });
 
 </script>

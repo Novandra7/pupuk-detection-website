@@ -134,6 +134,8 @@ const editMode = ref(false);
 const dialogFormVisible = ref(false);
 const formCctvErrors = ref([]);
 const warehouses = computed(() => usePage().props.warehouse);
+const apiBaseUrl = import.meta.env.VITE_API_BASE_URL;
+
 
 
 const formCctv = useForm({
@@ -184,10 +186,10 @@ async function addCctvSubmitAction() {
 
 function editCctvAction(dataCctv) {
     editMode.value = true;
-    dialogFormVisible.value = true;
+    dialogFormVisible.value = true;   
 
     formCctv.cctv_id =dataCctv.id;
-    formCctv.ms_warehouse_id =dataCctv.ms_warehouse_id;
+    formCctv.ms_warehouse_id =dataCctv.warehouse.warehouse_name;
     formCctv.source_name = dataCctv.source_name;
     formCctv.url_streaming = dataCctv.url_streaming;
     formCctv.endpoint = dataCctv.endpoint;
@@ -273,9 +275,10 @@ function switchCctvStatus(dataCctv, status) {
                 message: 'Action Canceled',
             })
         });
-    } else {
+    } else {               
         axios.put(route('cctv.switch_status', dataCctv.id), {
-            is_active: status
+            is_active: status,
+            channel: dataCctv.source_name
         }).then((response) => {
             ElMessage({
                 message: response.data.message,

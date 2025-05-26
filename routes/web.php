@@ -7,6 +7,7 @@ use App\Http\Controllers\RoleAndPermissionController;
 use App\Http\Controllers\ShiftController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\WarehouseController;
+use App\Models\Cctv;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
@@ -28,7 +29,10 @@ Route::authenticated()->group(function () {
     Route::post('/logout', [AuthenticationController::class, 'logout'])->name('logout');
 
     Route::get('/', fn() => redirect()->route('home'));
-    Route::get('/dashboard', fn() => Inertia::render('Home', []))->name('home');
+    Route::get('/dashboard', fn() => Inertia::render('Home', [
+        'cctv' => Cctv::where('is_active', true)->get(),
+        'refresh' => true, 
+    ]))->name('home');
 
     Route::controller(UserController::class)->group(function () {
         Route::get('/user', 'userManagePage')->name('user.browse')->can('user.browse');

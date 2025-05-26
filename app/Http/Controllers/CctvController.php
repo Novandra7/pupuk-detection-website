@@ -9,6 +9,7 @@ use App\Interfaces\CctvRepository;
 use App\Models\Cctv;
 use App\Models\Warehouse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Http;
 use Inertia\Inertia;
 use Pkt\StarterKit\Helpers\DxResponse;
 use Spatie\Permission\Models\Role;
@@ -66,7 +67,16 @@ class CctvController extends Controller
     public function switchStatus(String $id, Request $request)
     {
         try {
-            $cctvData = ['is_active' => $request['is_active'] ? 1 : 0];
+            $is_active = $request['is_active'] ? 1 : 0;
+            $cctvData = ['is_active' => $is_active];
+
+            $channel = $request['channel'];
+            $baseUrl = env('VITE_API_BASE_URL');
+            $action = $is_active ? 'start_predict' : 'stop_predict';
+            $url = "{$baseUrl}/{$action}/{$channel}";
+
+            Http::get($url);
+
             $this->cctvRepository->updateCctv($id, $cctvData);
             return response()->json(['message' => 'Success to switch cctv status']);
         } catch (\Throwable $th) {
