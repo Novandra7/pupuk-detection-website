@@ -7,7 +7,8 @@
             </div>
             <div class="flex flex-row items-center">  
                 <DatePicker @selectDate="handleDate" />
-                <BsIconButton class="ml-2" icon="cloud-arrow-up" @click="storeData"/>
+                <!-- <BsIconButton class="ml-2" :icon="isRunning ? 'pause' : 'clock'" :title="isRunning ? 'Stop Scheduler' : 'Start Scheduler'" @click="toggleScheduler" /> -->
+                <BsIconButton class="ml-2" icon="cloud-arrow-up" @click="storeData" title ="Store Data"/>
                 <BsIconButton class="ml-2" icon="arrow-path" @click="loadChart(null)"/>
             </div>
         </div>
@@ -32,6 +33,7 @@ import axios from 'axios'
 import DatePicker from '@/Components/DatePicker.vue'
 import BsIconButton from '@granule/Components/BsIconButton.vue';
 import ProductionLineChart from '@/Widgets/Home/ProductionLineChart.vue';
+import { ElMessage } from 'element-plus'
 
 
 // Props
@@ -41,13 +43,34 @@ const chartDataRef = ref([])
 const selectedDate = ref(null)
 const apiBaseUrl = import.meta.env.VITE_API_BASE_URL
 
-const dialogVisible = ref(false)
 const modalCctv = ref(null)
 const modalShift = ref(null)
+const dialogVisible = ref(false)
+const isRunning = ref(false)
 
 function handleDate(date) {
   selectedDate.value = date
   loadChart(date)
+}
+
+async function toggleScheduler() {
+  const endpoint = isRunning.value ? '/stop_scheduler' : '/start_scheduler'
+  const response = await axios.get(`${apiBaseUrl}${endpoint}`)
+  ElMessage({
+    message: response.data.message,
+    type: response.data.status
+  })
+  isRunning.value = !isRunning.value
+  
+}
+
+async function checkSchedulerStatus() {
+  try {
+    const response = await axios.get(`${apiBaseUrl}/scheduler_status`)
+    isRunning.value = response.data.running
+  } catch (error) {
+    console.error('Gagal mengambil status scheduler:', error)
+  }
 }
 
 const storeData = async () => {
@@ -119,9 +142,7 @@ const loadChart = async (date) => {
     });
 
     // Ubah object jadi array
-    const chartDataFix = Object.values(chartDataMap);
-    console.log(chartDataFix);
-    
+    const chartDataFix = Object.values(chartDataMap);    
 
     chart.data = chartDataFix;
 
@@ -193,6 +214,7 @@ const loadChart = async (date) => {
 
 }
 onMounted(async ()=>{
+  checkSchedulerStatus()
   loadChart()
 })
 </script>

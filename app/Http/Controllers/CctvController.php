@@ -75,9 +75,7 @@ class CctvController extends Controller
             $action = $is_active ? 'start_predict' : 'stop_predict';
             $url = "{$baseUrl}/{$action}/{$channel}";
 
-            Http::get($url);
-
-            $this->cctvRepository->updateCctv($id, $cctvData);
+            $this->cctvRepository->updateCctv($id, $cctvData, $url);
             return response()->json(['message' => 'Success to switch cctv status']);
         } catch (\Throwable $th) {
             return response()->json(['message' => $th->getMessage()], 500);

@@ -189,7 +189,7 @@ function editCctvAction(dataCctv) {
     dialogFormVisible.value = true;   
 
     formCctv.cctv_id =dataCctv.id;
-    formCctv.ms_warehouse_id =dataCctv.warehouse.warehouse_name;
+    formCctv.ms_warehouse_id =dataCctv.warehouse.id;
     formCctv.source_name = dataCctv.source_name;
     formCctv.url_streaming = dataCctv.url_streaming;
     formCctv.endpoint = dataCctv.endpoint;

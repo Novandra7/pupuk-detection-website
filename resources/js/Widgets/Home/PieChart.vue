@@ -28,7 +28,9 @@ const apiBaseUrl = import.meta.env.VITE_API_BASE_URL
 
 onMounted(async () => {
     try {
-        const response = await axios.get(`${apiBaseUrl}/read_formatted_records/${dataSource}`)
+        const response = await axios.get(`${apiBaseUrl}/read_formatted_records/${dataSource}`,{
+            params: {now: true}
+        })
         rawData.value = response.data        
 
         // Gunakan license dan theme

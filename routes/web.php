@@ -29,10 +29,7 @@ Route::authenticated()->group(function () {
     Route::post('/logout', [AuthenticationController::class, 'logout'])->name('logout');
 
     Route::get('/', fn() => redirect()->route('home'));
-    Route::get('/dashboard', fn() => Inertia::render('Home', [
-        'cctv' => Cctv::where('is_active', true)->get(),
-        'refresh' => true, 
-    ]))->name('home');
+    Route::get('/dashboard', fn() => Inertia::render('Home', []))->name('home');
 
     Route::controller(UserController::class)->group(function () {
         Route::get('/user', 'userManagePage')->name('user.browse')->can('user.browse');

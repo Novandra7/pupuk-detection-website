@@ -20,8 +20,6 @@ import am4themes_pkt_themes from "@granule/Core/Config/am4themes_pkt_themes";
 import axios from 'axios';
 
 const { cctvName, shift, warehouseId } = defineProps(['cctvName', 'shift', 'warehouseId'])
-console.log(cctvName, shift);
-
 
 const chartdiv = ref(null);
 const chartDataRef = ref(null);
@@ -140,9 +138,7 @@ onMounted(async () => {
     if (shift) params.push(`shift=${encodeURIComponent(shift)}`);
     if (params.length > 0) {
         url += `?${params.join("&")}`;
-    }
-    console.log(url);
-    
+    }    
 
     try {        
         const response = await axios.get(url)

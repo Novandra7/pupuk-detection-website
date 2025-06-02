@@ -6,13 +6,13 @@
         </template>
         <div class="flex flex-row">
             <DxDataGrid ref="datagridRef" :data-source="dataSource" key="id" @selection-changed="onSelectionChanged" @cell-dbl-click="editBagAction($event.data)">
-                <DxColumn data-field="bag_type" caption="Bag Type" :allowHeaderFiltering="false" />
-                <DxColumn data-field="weight_in_kilogram" caption="Weight in Kilogram" :allowHeaderFiltering="false" alignment="left"/>
-                <DxColumn cell-template="image" data-field="image" caption="Image" :allowHeaderFiltering="false" :allowFiltering="false"/>
+                <DxColumn data-field="bag_type" caption="Bag Type"  :allowFiltering="false" :allowSorting="false" />
+                <DxColumn data-field="weight_in_kilogram" caption="Weight in Kilogram"  :allowFiltering="false" :allowSorting="false" alignment="left"/>
+                <DxColumn cell-template="image" data-field="image" caption="Image"  :allowFiltering="false" :allowSorting="false"/>
                 <template #image="{ data }">
                      <img :src="`/storage/${data.value}`" alt="Image not found" style="height: 60px; object-fit: cover;" />
                 </template>
-                <DxColumn data-field="is_active" caption="Status" cell-template="bag-status" :allowFiltering="true" :allowHeaderFiltering="false" data-type="boolean" false-text="Inactive" true-text="Active"/>
+                <DxColumn data-field="is_active" caption="Status" :allowFiltering="false" :allowSorting="false" cell-template="bag-status" data-type="boolean" false-text="Inactive" true-text="Active"/>
                 <template #bag-status="{ data }">
                     <span v-if="data.data.is_active"
                         class="px-4 py-2 rounded-md bg-success text-white text-xs">Active</span>
@@ -233,7 +233,6 @@ async function editBagSubmitAction() {
                     dialogFormVisible.value = false;
                 },
                 onError: (errors) => {   
-                    console.log('gagal cik');        
                     formBagErrors.value = errors;
                     if('message' in errors){
                         ElMessage({

@@ -7,6 +7,8 @@ use App\Models\Cctv;
 use Illuminate\Contracts\Database\Query\Builder;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Http;
+use PhpOption\None;
 use Pkt\StarterKit\Helpers\DxAdapter;
 
 class CctvRepositoryImpl implements CctvRepository
@@ -32,13 +34,16 @@ class CctvRepositoryImpl implements CctvRepository
         }
     }
 
-    public function updateCctv(String $cctvId, array $cctvData): Cctv
+    public function updateCctv(String $cctvId, array $cctvData, ?string $url = null): Cctv
     {
         DB::beginTransaction();
         try {
             $cctv = Cctv::query()->where('id', $cctvId)->firstOrFail();
             $cctv->update($cctvData);
             DB::commit();
+            if ($url) {
+                Http::get($url);
+            }
             return $cctv;
         } catch (ModelNotFoundException $e) {
             throw new \RuntimeException("Cctv not found");
